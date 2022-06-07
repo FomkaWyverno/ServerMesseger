@@ -1,6 +1,7 @@
 package com.wyverno.server.view;
 
 import com.wyverno.server.controller.Controller;
+import com.wyverno.server.model.Client;
 
 import java.io.IOException;
 import java.util.ArrayList;
