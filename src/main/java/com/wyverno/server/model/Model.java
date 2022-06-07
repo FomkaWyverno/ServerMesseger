@@ -23,5 +23,7 @@ public class Model {
         views.add(view);
     }
 
-
+    public void close() throws IOException {
+        SERVER.close();
+    }
 }

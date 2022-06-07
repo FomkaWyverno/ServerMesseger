@@ -6,18 +6,22 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class Server {
-    private ServerSocket server;
-    private ArrayList<Socket> clientList = new ArrayList<>();
+    private final ServerSocket socket;
+    private final Thread receiveClientsThread;
+    private final ArrayList<Socket> clientList = new ArrayList<>();
 
     public Server(int port) throws IOException {
-        this.server = new ServerSocket(port);
+        this.socket = new ServerSocket(port);
+        this.receiveClientsThread = new Thread(new ReceiveClients(this, this.socket));
+        this.receiveClientsThread.start();
     }
 
-    public Server() throws IOException {
-        this(4747);
+    protected void addClient(Socket client) {
+        this.clientList.add(client);
     }
 
     public void close() throws IOException {
-        server.close();
+        receiveClientsThread.interrupt(); // Прекратить подключать пользователей
+        socket.close(); // Закрыть сервер
     }
 }
