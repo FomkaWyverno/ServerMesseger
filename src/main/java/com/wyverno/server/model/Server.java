@@ -12,14 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Server extends WebSocketServer {
 
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final ArrayList<Client> clients = new ArrayList<>();
+    private final HashMap<WebSocket,Client> clientHashMap = new HashMap<>();
 
     public Server(InetSocketAddress address) {
         super(address);
@@ -65,9 +65,10 @@ public class Server extends WebSocketServer {
         switch (jsonNode.get("type").asText()) {
             case "nickname" : {
                 Client client = new Client(jsonNode.get("nick").asText(),webSocket);
-                clients.add(client);
+                clientHashMap.put(webSocket,client);
             }
             case "message" : {
+                Client client = clientHashMap.get(webSocket);
                 
             }
         }
