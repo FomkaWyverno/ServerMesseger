@@ -1,27 +1,75 @@
 package com.wyverno.server.model;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wyverno.server.model.client.Client;
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+import org.slf4j.LoggerFactory;
+
+import org.slf4j.Logger;
+
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
-public class Server {
-    private final ServerSocket socket;
-    private final Thread receiveClientsThread;
-    private final ArrayList<Socket> clientList = new ArrayList<>();
+public class Server extends WebSocketServer {
 
-    public Server(int port) throws IOException {
-        this.socket = new ServerSocket(port);
-        this.receiveClientsThread = new Thread(new ReceiveClients(this, this.socket));
-        this.receiveClientsThread.start();
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final ArrayList<Client> clients = new ArrayList<>();
+
+    public Server(InetSocketAddress address) {
+        super(address);
     }
 
-    protected void addClient(Socket client) {
-        this.clientList.add(client);
+    public Server(int port) {
+        super(new InetSocketAddress(port));
     }
 
-    public void close() throws IOException {
-        receiveClientsThread.interrupt(); // Прекратить подключать пользователей
-        socket.close(); // Закрыть сервер
+    @Override
+    public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
+        logger.info("Connected client: " + webSocket.getRemoteSocketAddress().getHostString() + ":" + webSocket.getRemoteSocketAddress().getPort());
+    }
+
+    @Override
+    public void onClose(WebSocket webSocket, int i, String s, boolean b) {
+
+    }
+
+    @Override
+    public void onMessage(WebSocket webSocket, String message) {
+        logger.info("Received a message from a client");
+        try {
+            JsonNode jsonNode = objectMapper.readTree(message);
+            processingRequest(jsonNode,webSocket);
+        } catch (JsonProcessingException e) {
+            logger.error(String.valueOf(e.getCause()));
+        }
+    }
+
+    @Override
+    public void onError(WebSocket webSocket, Exception e) {
+
+    }
+
+    @Override
+    public void onStart() {
+        logger.info("Server started ip-address is " + this.getAddress().getHostName() + ":" + this.getPort());
+    }
+
+
+    private void processingRequest(JsonNode jsonNode, WebSocket webSocket) {
+        switch (jsonNode.get("type").asText()) {
+            case "nickname" : {
+                Client client = new Client(jsonNode.get("nick").asText(),webSocket);
+                clients.add(client);
+            }
+            case "message" : {
+                
+            }
+        }
     }
 }

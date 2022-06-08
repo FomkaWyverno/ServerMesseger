@@ -1,22 +1,61 @@
 package com.wyverno.client;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.handshake.ServerHandshake;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
-public class Client {
-    public static void main(String[] args) throws IOException, InterruptedException {
-        for (int i = 0; i < 3; i++) {
-            System.out.println(i+1);
+
+public class Client extends WebSocketClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+
+    public static void main(String[] args) throws URISyntaxException, InterruptedException {
+        WebSocketClient client = new Client("ws://localhost:50");
+
+        client.connect();
+        logger.info("Connect to server");
+        if(!client.isOpen()) {
             Thread.sleep(TimeUnit.SECONDS.toMillis(1));
         }
-        Socket socket = new Socket("localhost",50);
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        writer.write("Hello i client");
-        writer.flush();
-        writer.close();
-        System.out.println("finish");
+    }
+
+    public Client(URI serverUri, Draft draft) {
+        super(serverUri, draft);
+    }
+
+    public Client(URI serverURI) {
+        super(serverURI);
+    }
+
+    public Client(String URI) throws URISyntaxException {
+        super(new URI(URI));
+    }
+
+
+
+    @Override
+    public void onOpen(ServerHandshake serverHandshake) {
+
+    }
+
+    @Override
+    public void onMessage(String s) {
+
+    }
+
+    @Override
+    public void onClose(int i, String s, boolean b) {
+
+    }
+
+    @Override
+    public void onError(Exception e) {
+
     }
 }
