@@ -70,9 +70,10 @@ public class Server extends WebSocketServer {
 
     private void processingRequest(JsonNode jsonNode, WebSocket webSocket) throws JsonProcessingException {
         logger.trace("Processing request...");
-        switch (jsonNode.get("type").asText()) { // Узнаем тип запроса
-            case "nickname" : { // Устанавливаем имя пользователю
-                Events.joinNewClient(jsonNode,webSocket,this.clientHashMap); // Запускаем ивент входа новога пользователя
+        switch (jsonNode.get("data").get("type").asText()) { // Узнаем тип запроса
+            case "authorization" : { // Проводим авторизацию пользователя
+                logger.trace("Type is authorization");
+                Events.joinNewClient(jsonNode.get("data"),webSocket,jsonNode.get("requestID").asInt(),this.clientHashMap); // Запускаем ивент входа новога пользователя
                 break;
             }
             case "message" : { // Отправляем сообщение пользоватям

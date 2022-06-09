@@ -17,10 +17,15 @@ public class Events {
     private static final Logger logger = LoggerFactory.getLogger(Events.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static void joinNewClient(JsonNode jsonNode, WebSocket webSocket, HashMap<WebSocket,Client> clientHashMap) {
-        Client client = new Client(jsonNode.get("nick").asText(),webSocket); // Создаем нового пользователя сервера
+    public static void joinNewClient(JsonNode jsonNode, WebSocket webSocket, int requestID, HashMap<WebSocket,Client> clientHashMap) throws JsonProcessingException {
+        Client client = new Client(jsonNode.get("nickname").asText(),webSocket); // Создаем нового пользователя сервера
         clientHashMap.put(webSocket,client); // Кладем его в мапу под ключем сокета
         logger.debug("Put in hashMap new client HashMap -> " + clientHashMap.toString());
+
+        logger.trace("Create response");
+        Response response = new Response(requestID,0,"OK");
+        webSocket.send(objectMapper.writeValueAsString(response));
+        logger.trace("Send to server response");
     }
 
     public static void sendMessage(JsonNode jsonNode, WebSocket webSocket, HashMap<WebSocket, Client> clientHashMap) throws JsonProcessingException {
