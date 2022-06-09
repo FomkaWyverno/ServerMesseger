@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
+import com.wyverno.server.model.client.Message;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Server extends WebSocketServer {
 
@@ -32,21 +34,25 @@ public class Server extends WebSocketServer {
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         logger.info("Connected client: " + webSocket.getRemoteSocketAddress().getHostString() + ":" + webSocket.getRemoteSocketAddress().getPort());
+        // Логируем информацию о подключенном пользователе
     }
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-
+        logger.info("Disconnected client: " + webSocket.getRemoteSocketAddress().getHostString() + ":" + webSocket.getRemoteSocketAddress().getPort());
+        // Логируем информацию о отключеном пользователе
     }
 
     @Override
     public void onMessage(WebSocket webSocket, String message) {
-        logger.info("Received a message from a client");
+        logger.debug("Received a message from a client: " + message); // Логируем сообщение от пользователя
+        logger.debug("Received from the user " + webSocket.getRemoteSocketAddress()); // Логируем от кого пришло сообщение
         try {
-            JsonNode jsonNode = objectMapper.readTree(message);
-            processingRequest(jsonNode,webSocket);
+            JsonNode jsonNode = objectMapper.readTree(message); // Парсим в JsonNode сообжение
+            logger.trace("Read json"); // Оповещаем что мы прочитали json
+            processingRequest(jsonNode,webSocket); // Вызываем метод процесса обработки запроса
         } catch (JsonProcessingException e) {
-            logger.error(String.valueOf(e.getCause()));
+            logger.error("The message is not JSON or the message is have bug with JSON file.\n" + e.getCause()); // Оповещаем о ошибке в логгер
         }
     }
 
@@ -58,19 +64,24 @@ public class Server extends WebSocketServer {
     @Override
     public void onStart() {
         logger.info("Server started ip-address is " + this.getAddress().getHostName() + ":" + this.getPort());
+        // Оповещаем логера о запуске сервера
     }
 
 
-    private void processingRequest(JsonNode jsonNode, WebSocket webSocket) {
-        switch (jsonNode.get("type").asText()) {
-            case "nickname" : {
-                Client client = new Client(jsonNode.get("nick").asText(),webSocket);
-                clientHashMap.put(webSocket,client);
+    private void processingRequest(JsonNode jsonNode, WebSocket webSocket) throws JsonProcessingException {
+        logger.trace("Processing request...");
+        switch (jsonNode.get("type").asText()) { // Узнаем тип запроса
+            case "nickname" : { // Устанавливаем имя пользователю
+                Events.joinNewClient(jsonNode,webSocket,this.clientHashMap); // Запускаем ивент входа новога пользователя
+                break;
             }
-            case "message" : {
-                Client client = clientHashMap.get(webSocket);
-                
+            case "message" : { // Отправляем сообщение пользоватям
+                Events.sendMessage(jsonNode,webSocket,this.clientHashMap); // Запускаем ивент отправки сообщения
+                break;
             }
         }
     }
+
+
+
 }

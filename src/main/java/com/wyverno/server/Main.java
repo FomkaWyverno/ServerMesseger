@@ -13,9 +13,9 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws InterruptedException {
         logger.info("Starting...");
-        Model model = new Model(50);
+        Model model = new Model(50); // Создаем модель и указываем порт
         logger.trace("Create Model");
         Controller controller = new Controller(model);
         logger.trace("Create controller");
@@ -23,5 +23,7 @@ public class Main {
         logger.trace("Create view");
         model.addView(view);
         logger.trace("Model adding view");
+
+        model.startServer();
     }
 }
