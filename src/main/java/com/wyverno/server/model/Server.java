@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
-import com.wyverno.server.model.client.Message;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -14,7 +13,6 @@ import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Server extends WebSocketServer {
 
@@ -41,6 +39,8 @@ public class Server extends WebSocketServer {
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         logger.info("Disconnected client: " + webSocket.getRemoteSocketAddress().getHostString() + ":" + webSocket.getRemoteSocketAddress().getPort());
         // Логируем информацию о отключеном пользователе
+        logger.info("Disconnected nick: " + clientHashMap.get(webSocket).getNickname());
+        this.clientHashMap.remove(webSocket);
     }
 
     @Override
@@ -77,7 +77,8 @@ public class Server extends WebSocketServer {
                 break;
             }
             case "message" : { // Отправляем сообщение пользоватям
-                Events.sendMessage(jsonNode,webSocket,this.clientHashMap); // Запускаем ивент отправки сообщения
+                logger.trace("Type is message");
+                Events.sendMessage(jsonNode.get("data"),webSocket, jsonNode.get("requestID").asInt(),this.clientHashMap); // Запускаем ивент отправки сообщения
                 break;
             }
         }
