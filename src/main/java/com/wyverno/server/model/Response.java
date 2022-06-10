@@ -60,6 +60,6 @@ public class Response {
     }
 
     public enum Type {
-        authorization, joinToChat, leaveFromChat, message, deleteMessage, listMessages;
+        authorization, joinToChat, leaveFromChat, message, deleteElement, listMessages, setNameChat;
     }
 }

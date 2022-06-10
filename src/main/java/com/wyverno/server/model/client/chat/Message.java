@@ -2,17 +2,19 @@ package com.wyverno.server.model.client.chat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wyverno.server.model.ParserJSON;
 
-public class Message implements ParserJSON {
+public class Message extends ElementMessageInChat {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private String nickname;
     private String message;
+    private int id;
 
-    public Message(String nickname, String message) {
+    public Message(String nickname, String message, int id) {
+        super(id);
         this.nickname = nickname;
         this.message = message;
+        this.id = id;
     }
 
     public String getNickname() {
@@ -31,7 +33,15 @@ public class Message implements ParserJSON {
         this.message = message;
     }
 
-    @Override
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @Override()
     public String toString() {
         return this.nickname + ": " + this.message;
     }
