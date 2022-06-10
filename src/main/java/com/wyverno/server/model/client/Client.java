@@ -1,11 +1,12 @@
 package com.wyverno.server.model.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.wyverno.server.model.client.chat.Chat;
 import org.java_websocket.WebSocket;
 
 public class Client {
     private String nickname;
     private WebSocket webSocket;
+    private Chat rightNowChat;
 
     public Client(String nickname, WebSocket webSocket) {
         this.nickname = nickname;
@@ -18,6 +19,14 @@ public class Client {
 
     public WebSocket getWebSocket() {
         return webSocket;
+    }
+
+    public Chat getRightNowChat() {
+        return rightNowChat;
+    }
+
+    public void setRightNowChat(Chat rightNowChat) {
+        this.rightNowChat = rightNowChat;
     }
 
     @Override

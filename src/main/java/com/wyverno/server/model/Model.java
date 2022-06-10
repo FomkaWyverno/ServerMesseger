@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 
 public class Model {
 
-    private static final Logger logger = LoggerFactory.getLogger(Model.class);
+    /*private static final Logger logger = LoggerFactory.getLogger(Model.class);
     //private ArrayList<View> views;
-    private final Server server;
+    //private final Server server;
     private Thread serverThread;
 
     public Model() {
@@ -17,14 +17,14 @@ public class Model {
 
     public Model(int port) {
         //this.views = new ArrayList<>(); // Создаем лист вюшек
-        this.server = new Server(port); // Создаем сервер
+        //this.server = new Server(port); // Создаем сервер
         logger.trace("Create server");
         logger.info("Server is starting now");
     }
 
-    /*public void addView(View view) {
+    *//*public void addView(View view) {
         views.add(view);
-    }*/
+    }*//*
 
     public void startServer() {
         logger.trace("Create server thread");
@@ -36,5 +36,5 @@ public class Model {
     public void close() throws InterruptedException {
         this.server.stop();
         this.serverThread.interrupt();
-    }
+    }*/
 }
