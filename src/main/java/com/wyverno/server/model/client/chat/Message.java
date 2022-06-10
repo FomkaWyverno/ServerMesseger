@@ -1,4 +1,4 @@
-package com.wyverno.server.model.client;
+package com.wyverno.server.model.client.chat;
 
 public class Message {
     private String nickname;

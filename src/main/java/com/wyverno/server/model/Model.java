@@ -1,15 +1,13 @@
 package com.wyverno.server.model;
 
-import com.wyverno.server.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 
 public class Model {
 
     private static final Logger logger = LoggerFactory.getLogger(Model.class);
-    private ArrayList<View> views;
+    //private ArrayList<View> views;
     private final Server server;
     private Thread serverThread;
 
@@ -18,15 +16,15 @@ public class Model {
     }
 
     public Model(int port) {
-        this.views = new ArrayList<>(); // Создаем лист вюшек
+        //this.views = new ArrayList<>(); // Создаем лист вюшек
         this.server = new Server(port); // Создаем сервер
         logger.trace("Create server");
         logger.info("Server is starting now");
     }
 
-    public void addView(View view) {
+    /*public void addView(View view) {
         views.add(view);
-    }
+    }*/
 
     public void startServer() {
         logger.trace("Create server thread");

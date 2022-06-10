@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Server extends WebSocketServer {
 
@@ -83,7 +84,4 @@ public class Server extends WebSocketServer {
             }
         }
     }
-
-
-
 }
