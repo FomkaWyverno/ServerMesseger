@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.Chat;
-import com.wyverno.server.model.client.chat.Message;
+import com.wyverno.server.model.client.chat.PrivateChat;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Events {
@@ -54,7 +55,7 @@ public class Events {
     public synchronized static void sendMessage(JsonNode jsonNode,
                                                 WebSocket webSocketClient,
                                                 int requestID,
-                                                HashMap<WebSocket, Client> clientHashMap) throws JsonProcessingException { // Пользователь отправил сообщение
+                                                HashMap<WebSocket, Client> clientHashMap) { // Пользователь отправил сообщение
         Client client = clientHashMap.get(webSocketClient); // Берем у Сокета обьект Клиента
         logger.debug("HashMap ->" + clientHashMap.toString()); // Показываем внутреность карты
         logger.trace("Get client object from clientHashMap: " + client.toString()); // Оповещаем что мы взяли из карты клиента
@@ -63,27 +64,20 @@ public class Events {
         Chat chat = client.getRightNowChat();
 
         chat.sendMessage(client,jsonNode.get("message").asText());
+    }
 
-        /*String nickname = client.getNickname(); // Узнаем никнейм
-        logger.trace("Get client nickname: " + nickname); // Логгируем никнейм
+    public synchronized static void getList(WebSocket webSocketClient,
+                                            int requestID,
+                                            List<PrivateChat> chatList) throws JsonProcessingException {
+        logger.trace("Get list for user -> " + chatList.toString());
+        String jsonList = objectMapper.writeValueAsString(chatList);
+        logger.debug("List to JSON -> " + jsonList);
 
-        String messageClient = jsonNode.get("message").asText(); // Берем у запроса сообщение
-        logger.trace("Get client message: " + messageClient); // Логируем сообщение
+        Response response = new Response(requestID,0,jsonList, Response.Type.gotChatList);
+        String responseJSON = response.toJSON();
+        logger.debug("Response to JSON -> " + responseJSON);
 
-
-        Message message = new Message(nickname,messageClient); // Создаем обьект сообщение который включает в себе никнейм и сообщение
-        logger.trace("Created message object");
-
-
-        logger.info("[Global Chat] " + message.getNickname() + ": " + message.getMessage());
-
-        Response response = new Response(requestID,0,objectMapper.writeValueAsString(message),Response.Type.message); // Создаем Response для клиента
-        String jsonResponse = response.toJSON();
-
-        for (Map.Entry<WebSocket,Client> pair : clientHashMap.entrySet()) { // Берем всех клиентов
-            WebSocket socket = pair.getValue().getWebSocket(); // Берем у каждого клиента сокет
-            socket.send(jsonResponse); // Отправляем сообщение
-        }*/
+        webSocketClient.send(responseJSON);
     }
 
     private synchronized static boolean isFreeNickname(Client client, HashMap<WebSocket,Client> clientHashMap) { // Проверка свободный ли никнейм на сервере

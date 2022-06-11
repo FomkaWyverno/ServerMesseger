@@ -1,9 +1,13 @@
 package com.wyverno.server.model.client.chat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.Response;
 import com.wyverno.server.model.client.Client;
+import com.wyverno.server.model.client.chat.element.ConnectDisconnectElement;
+import com.wyverno.server.model.client.chat.element.ElementMessageInChat;
+import com.wyverno.server.model.client.chat.element.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +21,10 @@ public abstract class Chat {
 
     private static final int DEFAULT_MAX_MESSAGES = 60;
 
+    @JsonIgnore
     private LinkedList<ElementMessageInChat> elementMessageInChatLinkedList = new LinkedList<>(); // Элементы чаты
-    private LinkedList<Message> messages = new LinkedList<>();
+    //private LinkedList<Message> messages = new LinkedList<>();
+    @JsonIgnore
     private List<Client> chatClients; // Клиенты в чате
     private int idElement = 0; // Самый последний айди элемента
     private int maxMessages; // Максимальное количество сообщений
@@ -63,11 +69,7 @@ public abstract class Chat {
 
     private void addElementInChat(ElementMessageInChat element, Response.Type type) {
         this.removeLastElementInChat(); // Удаляем элементы из чата если они выходят границы
-        this.elementMessageInChatLinkedList.addFirst(element);
-
-        if (element instanceof Message) {
-            this.messages.addFirst((Message) element);
-        }
+        this.elementMessageInChatLinkedList.addFirst(element); // Добавляем в начало списка
 
         Response response = null;
         try {
@@ -87,7 +89,6 @@ public abstract class Chat {
 
         if (element instanceof Message) {
             logger.trace("Remove last message in chat [" + this.nameChat + "] " + element.toString());
-            this.messages.remove(element);
         } else if (element instanceof ConnectDisconnectElement) {
             logger.trace("Remove last element connect/disconnect");
         }
@@ -105,7 +106,7 @@ public abstract class Chat {
             client.getWebSocket().send(responseNameChat.toJSON());
             logger.debug("Send client response set name chat");
             if (!elementMessageInChatLinkedList.isEmpty()) { // Если есть сообщение в чате тогда отправляем список клиенту
-                Response response = new Response(-1,0,objectMapper.writeValueAsString(messages),Response.Type.listMessages);
+                Response response = new Response(-1,0,objectMapper.writeValueAsString(elementMessageInChatLinkedList),Response.Type.listElementChat);
                 client.getWebSocket().send(response.toJSON());
                 logger.debug("Send client response with list message");
                 this.removeLastElementInChat();

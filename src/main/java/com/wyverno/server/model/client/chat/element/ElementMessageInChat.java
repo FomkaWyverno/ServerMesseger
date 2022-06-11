@@ -1,4 +1,4 @@
-package com.wyverno.server.model.client.chat;
+package com.wyverno.server.model.client.chat.element;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +8,8 @@ public abstract class ElementMessageInChat implements ParserJSON {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private int id;
+
+    private final String elementName = this.getClass().getSimpleName();
 
     public ElementMessageInChat(int id) {
         this.id = id;
@@ -19,6 +21,10 @@ public abstract class ElementMessageInChat implements ParserJSON {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getElementName() {
+        return elementName;
     }
 
     @Override

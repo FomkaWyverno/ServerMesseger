@@ -2,6 +2,7 @@ package com.wyverno.server;
 
 import com.wyverno.server.model.Server;
 import com.wyverno.server.model.client.chat.GlobalChat;
+import com.wyverno.server.model.client.chat.PrivateChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,12 @@ public class Main {
         logger.trace("Model adding view");*/
         //model.startServer();
 
-        Server server = new Server(50,new GlobalChat(3));
+        Server server = new Server(50,new GlobalChat(10));
+
+        server.addChat(new PrivateChat("Test-1",10));
+        server.addChat(new PrivateChat("Test-2",10));
+        server.addChat(new PrivateChat("Test-3", 10));
+
         logger.trace("Created server");
         Thread serverThread = new Thread(server);
         logger.trace("Created Thread for Server");

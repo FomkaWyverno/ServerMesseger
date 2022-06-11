@@ -2,12 +2,11 @@ package com.wyverno.server.model.client.chat;
 
 import com.wyverno.server.model.client.Client;
 
-import java.util.List;
-
 public class PrivateChat extends Chat {
 
-    public PrivateChat(String nameChat, int maxMessages, List<Client> chatClients) {
-        super(nameChat, maxMessages, chatClients);
+    public PrivateChat(String nameChat, int maxMessages, Client client) {
+        super(nameChat, maxMessages);
+        this.joinClient(client);
     }
 
     public PrivateChat(String nameChat, int maxMessages) {

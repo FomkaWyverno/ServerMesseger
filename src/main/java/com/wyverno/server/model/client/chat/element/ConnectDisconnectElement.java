@@ -1,4 +1,4 @@
-package com.wyverno.server.model.client.chat;
+package com.wyverno.server.model.client.chat.element;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

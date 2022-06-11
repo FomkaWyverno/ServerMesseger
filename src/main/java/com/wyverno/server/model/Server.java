@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.Chat;
+import com.wyverno.server.model.client.chat.PrivateChat;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -26,16 +27,16 @@ public class Server extends WebSocketServer {
 
 
     private final HashMap<WebSocket,Client> clientHashMap = new HashMap<>();
-    private final List<Chat> chatList;
+    private final List<PrivateChat> chatList;
     private final Chat GLOBAL_CHAT;
 
-    public Server (InetSocketAddress address, List<Chat> chatList, Chat globalChat) {
+    public Server (InetSocketAddress address, List<PrivateChat> chatList, Chat globalChat) {
         super(address);
         this.chatList = chatList;
         this.GLOBAL_CHAT = globalChat;
     }
 
-    public Server(int port, List<Chat> chatList, Chat globalChat) {
+    public Server(int port, List<PrivateChat> chatList, Chat globalChat) {
         super(new InetSocketAddress(port));
         this.chatList = chatList;
         this.GLOBAL_CHAT = globalChat;
@@ -119,10 +120,14 @@ public class Server extends WebSocketServer {
                 Events.sendMessage(jsonNode.get("data"),webSocket, jsonNode.get("requestID").asInt(),this.clientHashMap); // Запускаем ивент отправки сообщения
                 break;
             }
+            case "getChatList" : {
+                logger.trace("Type is getChatList");
+                Events.getList(webSocket,jsonNode.get("requestID").asInt(),chatList);
+            }
         }
     }
 
-    public void addChat(Chat chat) {
+    public void addChat(PrivateChat chat) {
         this.chatList.add(chat);
     }
 }
