@@ -21,7 +21,7 @@ public class Main {
         logger.trace("Model adding view");*/
         //model.startServer();
 
-        Server server = new Server(50,new GlobalChat(15));
+        Server server = new Server(50,new GlobalChat(3));
         logger.trace("Created server");
         Thread serverThread = new Thread(server);
         logger.trace("Created Thread for Server");

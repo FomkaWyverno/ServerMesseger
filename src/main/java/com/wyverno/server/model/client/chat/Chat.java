@@ -44,29 +44,13 @@ public abstract class Chat {
     }
 
     public synchronized void sendMessage(Message message) { // Отправляем сообщение
-        this.checkAndRemoveAfterLimitElement();
-        try {
-            Response response = new Response(-1,0,message.toJSON(),Response.Type.message);
-            this.sendAllClientInChat(response);
-            this.elementMessageInChatLinkedList.addFirst(message); // Добавляем в начало списка сообщение
-            this.messages.addFirst(message);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-
+        this.removeLastElementInChat();
+        this.addElementInChat(message,Response.Type.message);// Добавляем в начало списка сообщение
     }
 
-    public void checkAndRemoveAfterLimitElement() {
+    private void removeLastElementInChat() { // Удаляем вышедшие за границы елементы
         while (this.elementMessageInChatLinkedList.size() >= this.maxMessages) { // Проверяем чат на максимальное количество сообщений
-            ElementMessageInChat element = elementMessageInChatLinkedList.removeLast(); // Удаляем последний элемент из списка
-
-            if (element instanceof Message) {
-                logger.trace("Remove last message in chat [" + this.nameChat + "] " + element.toString()); // Логируем что мы его удалили
-                this.messages.remove(element);
-            } else if (element instanceof ConnectDisconnectElement) {
-                logger.trace("Remove last element connect/disconnect ");
-            }
+            ElementMessageInChat element = removeElementLastInChat();
 
             try {
                 Response response = new Response(-1,0,element.toJSON(),Response.Type.deleteElement);
@@ -75,6 +59,39 @@ public abstract class Chat {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void addElementInChat(ElementMessageInChat element, Response.Type type) {
+        this.removeLastElementInChat(); // Удаляем элементы из чата если они выходят границы
+        this.elementMessageInChatLinkedList.addFirst(element);
+
+        if (element instanceof Message) {
+            this.messages.addFirst((Message) element);
+        }
+
+        Response response = null;
+        try {
+            response = new Response(-1,0,element.toJSON(),type);
+            logger.debug("Created response for element");
+        } catch (JsonProcessingException e) {
+            logger.error(e.getMessage() + " Cause -> " + e.getCause());
+        }
+
+        assert response != null;
+
+        this.sendAllClientInChat(response); // Создали отклик и отправляем всем участинкам чата
+    }
+
+    private ElementMessageInChat removeElementLastInChat() { // Удалить последний элемент из чата
+        ElementMessageInChat element = this.elementMessageInChatLinkedList.removeLast(); // Удаляем последний элемент
+
+        if (element instanceof Message) {
+            logger.trace("Remove last message in chat [" + this.nameChat + "] " + element.toString());
+            this.messages.remove(element);
+        } else if (element instanceof ConnectDisconnectElement) {
+            logger.trace("Remove last element connect/disconnect");
+        }
+        return element;
     }
 
     public void joinClient(Client client) { // Клиент вошел в этот чат
@@ -87,11 +104,11 @@ public abstract class Chat {
             Response responseNameChat = new Response(-1,0,this.nameChat,Response.Type.setNameChat);
             client.getWebSocket().send(responseNameChat.toJSON());
             logger.debug("Send client response set name chat");
-            if (!elementMessageInChatLinkedList.isEmpty()) {
+            if (!elementMessageInChatLinkedList.isEmpty()) { // Если есть сообщение в чате тогда отправляем список клиенту
                 Response response = new Response(-1,0,objectMapper.writeValueAsString(messages),Response.Type.listMessages);
                 client.getWebSocket().send(response.toJSON());
                 logger.debug("Send client response with list message");
-                this.checkAndRemoveAfterLimitElement();
+                this.removeLastElementInChat();
             }
 
         } catch (JsonProcessingException e) {
@@ -113,26 +130,14 @@ public abstract class Chat {
 
     private void notifyJoinClient(Client client) {
         ElementMessageInChat element = new ConnectDisconnectElement(this.idElement,client.getNickname(),true);
-
-        Response response = null;
-        try {
-            response = new Response(-1,0, element.toJSON(), Response.Type.joinToChat);
-            logger.debug("Created response for element");
-        } catch (JsonProcessingException e) {
-            logger.error(e.getMessage() + " Cause -> " + e.getCause());
-        }
-        assert response != null;
-
-        this.elementMessageInChatLinkedList.addFirst(element);
-        sendAllClientInChat(response); // Создали отклик и отправляем всем участинкам чата
+        this.idElement++;
+        this.addElementInChat(element,Response.Type.joinToChat);
     }
 
     private void notifyLeaveClient(Client client) {
-        Response response = new Response(-1, 0, client.getNickname(),Response.Type.leaveFromChat);
-        ElementMessageInChat element = new ConnectDisconnectElement(idElement,client.getNickname(),false);
-        this.elementMessageInChatLinkedList.addFirst(element);
-        this.idElement++;
-        sendAllClientInChat(response); // Создали отклик и отправляем всем участникам чата
+        ElementMessageInChat element = new ConnectDisconnectElement(idElement,client.getNickname(),false); // Создаем элемент чата
+        this.idElement++; // Увеличиваем айди
+        this.addElementInChat(element,Response.Type.leaveFromChat); // Добавляем в чат элемент
     }
 
     private void sendAllClientInChat(Response response) {
