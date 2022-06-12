@@ -24,9 +24,10 @@ public class Main {
 
         Server server = new Server(50,new GlobalChat(10));
 
-        server.addChat(new PrivateChat("Test-1",10));
-        server.addChat(new PrivateChat("Test-2",10));
-        server.addChat(new PrivateChat("Test-3", 10));
+        server.addChat(new PrivateChat("Test-1",10,"123",server));
+        server.addChat(new PrivateChat("ATest-2",10,server));
+        server.addChat(new PrivateChat("BTest-3", 10,server));
+        server.addChat(new PrivateChat("BTG","string",server));
 
         logger.trace("Created server");
         Thread serverThread = new Thread(server);

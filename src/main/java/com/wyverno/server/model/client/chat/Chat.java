@@ -3,7 +3,7 @@ package com.wyverno.server.model.client.chat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wyverno.server.model.Response;
+import com.wyverno.server.model.response.Response;
 import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.element.ConnectDisconnectElement;
 import com.wyverno.server.model.client.chat.element.ElementMessageInChat;
@@ -26,7 +26,9 @@ public abstract class Chat {
     //private LinkedList<Message> messages = new LinkedList<>();
     @JsonIgnore
     private List<Client> chatClients; // Клиенты в чате
+    @JsonIgnore
     private int idElement = 0; // Самый последний айди элемента
+
     private int maxMessages; // Максимальное количество сообщений
     private String nameChat; // Название чата
 
@@ -34,6 +36,7 @@ public abstract class Chat {
         this.nameChat = nameChat;
         this.maxMessages = maxMessages;
         this.chatClients = chatClients;
+        logger.info("Create chat: " + this);
     }
 
     public Chat(String nameChat, int maxMessages) {
@@ -97,12 +100,17 @@ public abstract class Chat {
 
     public void joinClient(Client client) { // Клиент вошел в этот чат
         logger.info("Client: " + client.getNickname() + " joined to chat under the name of " + this.toString());
+
+        if (client.getRightNowChat() != null) { // Если клиент уже находится в каком то чате
+            client.getRightNowChat().leaveClient(client); // Выходим из чата
+        }
+
         client.setRightNowChat(this); // Устанавливаем клиенту что он сейчас находится в этом чате
         this.chatClients.add(client); // Добавляем его в пользователей этого чата
 
 
         try {
-            Response responseNameChat = new Response(-1,0,this.nameChat,Response.Type.setNameChat);
+            Response responseNameChat = new Response(-1,0,this.nameChat,Response.Type.selfJoinToChat);
             client.getWebSocket().send(responseNameChat.toJSON());
             logger.debug("Send client response set name chat");
             if (!elementMessageInChatLinkedList.isEmpty()) { // Если есть сообщение в чате тогда отправляем список клиенту
@@ -115,7 +123,6 @@ public abstract class Chat {
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage() + " Cause -> " + e.getCause());
         }
-
 
         this.notifyJoinClient(client); // Оповещаем пользователей чата о подключение нового клиента
 
@@ -178,6 +185,10 @@ public abstract class Chat {
 
     public synchronized void setNameChat(String nameChat) {
         this.nameChat = nameChat;
+    }
+
+    public List<Client> getChatClients() {
+        return chatClients;
     }
 
     public String toString() {

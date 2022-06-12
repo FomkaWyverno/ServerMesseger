@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.Chat;
 import com.wyverno.server.model.client.chat.PrivateChat;
+import com.wyverno.server.model.response.Response;
+import com.wyverno.server.model.response.ResponseDataTryJoinToChatError;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,10 +82,56 @@ public class Events {
         webSocketClient.send(responseJSON);
     }
 
+    public synchronized static void tryJoinToChat(JsonNode jsonNode,
+                                               WebSocket webSocketClient,
+                                               int requestID,
+                                               List<PrivateChat> chatList,
+                                               HashMap<WebSocket, Client> clientHashMap) throws JsonProcessingException {
+        // Пользователь пытается подключится к чату
+
+        Client client = clientHashMap.get(webSocketClient);
+        PrivateChat chat = null;
+        logger.trace("Start search chat");
+        for (PrivateChat c : chatList) { // Ищем чат по айди
+            if (c.getId() == jsonNode.get("chatID").asInt()) { // Если айди чата равен айди запроса
+                logger.debug("Will find chat by id");
+                chat = c; // Устанавливаем чат в переменную
+                break;
+            }
+        }
+
+        Response response;
+
+        if (chat == null) { // Если чат не был найден
+            logger.debug("Not found chat by id");
+            response = new Response(requestID,3,
+                    new ResponseDataTryJoinToChatError(jsonNode.get("chatID").asInt(), "Does not exits").toJSON(),
+                    Response.Type.tryJoinToChat);
+            webSocketClient.send(response.toJSON()); // Составляем ответ для пользователя что чат не существует
+            return;
+        }
+
+        if (chat.joinClient(client,jsonNode.get("password").asText())) { // Зашел ли пользователь в чат?
+            response = new Response(requestID,0,"OK",Response.Type.tryJoinToChat);
+        } else {
+            response = new Response(requestID, 1,
+                    new ResponseDataTryJoinToChatError(chat.getId(),"Bad password").toJSON(),
+                    Response.Type.tryJoinToChat);
+        }
+        logger.debug(response.toString());
+        webSocketClient.send(response.toJSON());
+
+    }
+
+    public synchronized static void leaveFromChat() { // Отключение от чата
+
+    }
+
     private synchronized static boolean isFreeNickname(Client client, HashMap<WebSocket,Client> clientHashMap) { // Проверка свободный ли никнейм на сервере
         boolean isFree = true;
+        String clientNickname = client.getNickname().toLowerCase();
         for (Map.Entry<WebSocket, Client> pair : clientHashMap.entrySet()) {
-            if (pair.getValue().getNickname().equals(client.getNickname())) {
+            if (pair.getValue().getNickname().toLowerCase().equals(clientNickname)) {
                 isFree = false;
                 break;
             }

@@ -120,14 +120,41 @@ public class Server extends WebSocketServer {
                 Events.sendMessage(jsonNode.get("data"),webSocket, jsonNode.get("requestID").asInt(),this.clientHashMap); // Запускаем ивент отправки сообщения
                 break;
             }
-            case "getChatList" : {
+            case "getChatList" : { // Клиент просит лист с чатами
                 logger.trace("Type is getChatList");
                 Events.getList(webSocket,jsonNode.get("requestID").asInt(),chatList);
+                break;
+            }
+            case "leaveFromChat" : { // Клиент отключился от чата
+                logger.trace("Type is leaveFromChat");
+                Events.leaveFromChat();
+                break;
+            }
+            case "tryJoinToChat" : { // Клиент подключился к чату
+                logger.trace("Type is joinToChat");
+                Events.tryJoinToChat(jsonNode.get("data"),
+                        webSocket,
+                        jsonNode.get("requestID").asInt(),
+                        this.chatList,
+                        this.clientHashMap);
+                break;
             }
         }
     }
 
     public void addChat(PrivateChat chat) {
         this.chatList.add(chat);
+    }
+
+    public void removeChat(PrivateChat chat) {
+        this.chatList.remove(chat);
+    }
+
+    public void update(PrivateChat chat) { // Наблюдаемый обьект обновился
+        logger.trace("List clients in chat -> " + chat.getChatClients());
+        if (chat.getChatClients().isEmpty()) { // Если в чате нету пользователей то удаляем чат
+            logger.info("Removed chat -> " + chat);
+            this.chatList.remove(chat);
+        }
     }
 }

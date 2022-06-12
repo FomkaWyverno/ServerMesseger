@@ -1,4 +1,4 @@
-package com.wyverno.server.model;
+package com.wyverno.server.model.response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,7 +59,17 @@ public class Response {
         return objectMapper.writeValueAsString(this);
     }
 
+    @Override
+    public String toString() {
+        return "Response{" +
+                "requestID=" + requestID +
+                ", code=" + code +
+                ", type=" + type +
+                ", data='" + data + '\'' +
+                '}';
+    }
+
     public enum Type {
-        authorization, joinToChat, leaveFromChat, message, deleteElement, listElementChat, setNameChat, gotChatList;
+        authorization, joinToChat, leaveFromChat, message, deleteElement, listElementChat, selfJoinToChat, gotChatList, tryJoinToChat;
     }
 }
