@@ -18,6 +18,8 @@ public class PrivateChat extends Chat {
     private Client mainClient;
     @JsonIgnore
     private Server observer;
+    @JsonIgnore
+    private boolean isNeedObservable = true;
 
 
     public PrivateChat(String nameChat, int maxMessages, String password, Client client, Server observer) {
@@ -39,7 +41,9 @@ public class PrivateChat extends Chat {
 
     public PrivateChat(String nameChat, String password, Client client, Server observer) {
         super(nameChat);
-        this.joinClient(client,password);
+        this.joinClient(client);
+        this.mainClient = client;
+        this.password = password;
         this.hasPassword = true;
         this.observer = observer;
     }
@@ -70,6 +74,14 @@ public class PrivateChat extends Chat {
         this.observer = observer;
     }
 
+    public PrivateChat(String nameChat, Client client, Server observer) {
+        super(nameChat);
+        this.hasPassword = false;
+        this.joinClient(client);
+        this.mainClient = client;
+        this.observer = observer;
+    }
+
     public boolean joinClient(Client client, String password) { // Дополняем реализацию входа
 
         if (!this.hasPassword || this.password.equals(password)) {
@@ -82,8 +94,13 @@ public class PrivateChat extends Chat {
     @Override
     public void leaveClient(Client client) {
         logger.trace("Client leave from private chat -> " + this + ": " + client.getNickname());
-        super.leaveClient(client);
-        this.observer.update(this);
+        if (isNeedObservable) {
+            logger.debug("Is need observable chat");
+            super.leaveClient(client);
+            this.observer.update(this);
+        } else {
+            logger.debug("is not need observable chat");
+        }
     }
 
     public int getId() {
@@ -120,5 +137,9 @@ public class PrivateChat extends Chat {
 
     public void setObserver(Server observer) {
         this.observer = observer;
+    }
+
+    public void setNeedObservable(boolean isNeedClose) {
+        this.isNeedObservable = isNeedClose;
     }
 }

@@ -8,6 +8,7 @@ import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.element.ConnectDisconnectElement;
 import com.wyverno.server.model.client.chat.element.ElementMessageInChat;
 import com.wyverno.server.model.client.chat.element.Message;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,7 @@ public abstract class Chat {
     }
 
     public synchronized void sendMessage(Message message) { // Отправляем сообщение
+        logger.info(message.toString());
         this.removeLastElementInChat();
         this.addElementInChat(message,Response.Type.message);// Добавляем в начало списка сообщение
     }
@@ -159,7 +161,13 @@ public abstract class Chat {
         assert jsonResponse != null;
         logger.debug("Notify all clients in " + this.nameChat + " JSON Message for Clients -> " + jsonResponse);
         for (Client c : this.chatClients) { // Отправлеям всем участинам чата
-            c.getWebSocket().send(jsonResponse);
+            try {
+                c.getWebSocket().send(jsonResponse);
+            } catch (WebsocketNotConnectedException e) {
+                logger.debug("Web socket no longer exits! So remove client from clients list");
+                this.chatClients.remove(c);
+            }
+
         }
     }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.Chat;
+import com.wyverno.server.model.client.chat.GlobalChat;
 import com.wyverno.server.model.client.chat.PrivateChat;
 import com.wyverno.server.model.response.Response;
 import com.wyverno.server.model.response.ResponseDataTryJoinToChatError;
@@ -58,6 +59,8 @@ public class Events {
                                                 WebSocket webSocketClient,
                                                 int requestID,
                                                 HashMap<WebSocket, Client> clientHashMap) { // Пользователь отправил сообщение
+        logger.debug("Event is sendMessage");
+
         Client client = clientHashMap.get(webSocketClient); // Берем у Сокета обьект Клиента
         logger.debug("HashMap ->" + clientHashMap.toString()); // Показываем внутреность карты
         logger.trace("Get client object from clientHashMap: " + client.toString()); // Оповещаем что мы взяли из карты клиента
@@ -71,6 +74,7 @@ public class Events {
     public synchronized static void getList(WebSocket webSocketClient,
                                             int requestID,
                                             List<PrivateChat> chatList) throws JsonProcessingException {
+        logger.debug("Event is getList");
         logger.trace("Get list for user -> " + chatList.toString());
         String jsonList = objectMapper.writeValueAsString(chatList);
         logger.debug("List to JSON -> " + jsonList);
@@ -88,6 +92,7 @@ public class Events {
                                                List<PrivateChat> chatList,
                                                HashMap<WebSocket, Client> clientHashMap) throws JsonProcessingException {
         // Пользователь пытается подключится к чату
+        logger.debug("Event is tryJoinToChat");
 
         Client client = clientHashMap.get(webSocketClient);
         PrivateChat chat = null;
@@ -123,8 +128,47 @@ public class Events {
 
     }
 
-    public synchronized static void leaveFromChat() { // Отключение от чата
+    public synchronized static void joinToGlobalChat(WebSocket webSocketClient,
+                                                     Chat globalChat,
+                                                     HashMap<WebSocket, Client> clientHashMap) { // Конектимся к глобал чату
+        logger.debug("Event is joinToGlobalChat");
 
+        Client client = clientHashMap.get(webSocketClient);
+
+        globalChat.joinClient(client);
+    }
+
+    public synchronized static void tryCreateChat(JsonNode jsonNode,
+                                               WebSocket webSocketClient,
+                                               int requestID,
+                                               HashMap<WebSocket,Client> clientHashMap,
+                                               List<PrivateChat> chatList,
+                                               Server server) throws JsonProcessingException { // Пользователь пытается создать чат
+        Response response;
+
+        if (isFreeChatName(jsonNode.get("name").asText(),chatList)) {
+
+            Client client = clientHashMap.get(webSocketClient);
+
+            PrivateChat chat;
+
+            if (jsonNode.get("password").asText().isEmpty()) {
+                logger.debug("Client try create chat without password");
+                chat = new PrivateChat(jsonNode.get("name").asText(), client, server);
+            } else {
+                logger.debug("Client try create chat with password");
+                chat = new PrivateChat(jsonNode.get("name").asText(),jsonNode.get("password").asText(),client,server);
+            }
+            server.addChat(chat);
+
+            response = new Response(requestID,0, "OK",Response.Type.tryCreateChat);
+        } else {
+            logger.trace("Create response for client what chat name is not free!");
+            response = new Response(requestID,1,"Not Free Name Chat",Response.Type.tryCreateChat);
+        }
+
+        logger.debug("Sending response to websocket client -> " + response.toJSON());
+        webSocketClient.send(response.toJSON());
     }
 
     private synchronized static boolean isFreeNickname(Client client, HashMap<WebSocket,Client> clientHashMap) { // Проверка свободный ли никнейм на сервере
@@ -132,6 +176,19 @@ public class Events {
         String clientNickname = client.getNickname().toLowerCase();
         for (Map.Entry<WebSocket, Client> pair : clientHashMap.entrySet()) {
             if (pair.getValue().getNickname().toLowerCase().equals(clientNickname)) {
+                isFree = false;
+                break;
+            }
+        }
+        return isFree;
+    }
+
+    private synchronized static boolean isFreeChatName(String chatName, List<PrivateChat> chatList) { // Свободен ли имя чата
+        boolean isFree = true;
+        chatName = chatName.toLowerCase();
+        for (PrivateChat chat : chatList) {
+            if (chat.getNameChat().toLowerCase().equals(chatName)) {
+                logger.info("Chat name is not free.");
                 isFree = false;
                 break;
             }

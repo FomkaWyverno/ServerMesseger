@@ -94,7 +94,8 @@ public class Server extends WebSocketServer {
 
     @Override
     public void onError(WebSocket webSocket, Exception e) {
-
+        logger.error("Error client: " + webSocket.getRemoteSocketAddress().getHostString() + ":" +
+                webSocket.getRemoteSocketAddress().getPort() + " ERROR -> " + e);
     }
 
     @Override
@@ -125,11 +126,6 @@ public class Server extends WebSocketServer {
                 Events.getList(webSocket,jsonNode.get("requestID").asInt(),chatList);
                 break;
             }
-            case "leaveFromChat" : { // Клиент отключился от чата
-                logger.trace("Type is leaveFromChat");
-                Events.leaveFromChat();
-                break;
-            }
             case "tryJoinToChat" : { // Клиент подключился к чату
                 logger.trace("Type is joinToChat");
                 Events.tryJoinToChat(jsonNode.get("data"),
@@ -139,14 +135,33 @@ public class Server extends WebSocketServer {
                         this.clientHashMap);
                 break;
             }
+            case "joinToGlobalChat" : {
+                logger.trace("Type is join to global chat");
+                Events.joinToGlobalChat(webSocket,
+                        this.GLOBAL_CHAT,
+                        this.clientHashMap);
+                break;
+            }
+
+            case "tryCreateChat" : {
+                logger.trace("Type is try Create Chat");
+                Events.tryCreateChat(jsonNode.get("data"),
+                        webSocket,
+                        jsonNode.get("requestID").asInt(),
+                        this.clientHashMap,
+                        this.chatList,
+                        this);
+            }
         }
     }
 
     public void addChat(PrivateChat chat) {
+        logger.info("Add chat -> " + chat.toString());
         this.chatList.add(chat);
     }
 
     public void removeChat(PrivateChat chat) {
+        logger.info("Remove chat -> " + chat.toString());
         this.chatList.remove(chat);
     }
 
