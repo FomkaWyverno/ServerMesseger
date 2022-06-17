@@ -12,7 +12,7 @@ import org.java_websocket.WebSocket;
 
 import java.util.HashMap;
 
-public class TryJoinToChatEvent extends AbstractEvent {
+public class TryJoinToChatEvent extends AbstractEvent { // Попытка подключится к приватному чату
 
     public TryJoinToChatEvent(JsonNode jsonNode, WebSocket webSocket, int requestID, Server server) {
         super(jsonNode, webSocket, requestID, server);

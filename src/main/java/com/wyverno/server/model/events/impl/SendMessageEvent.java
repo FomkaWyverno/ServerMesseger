@@ -9,7 +9,7 @@ import org.java_websocket.WebSocket;
 
 import java.util.HashMap;
 
-public class SendMessageEvent extends AbstractEvent {
+public class SendMessageEvent extends AbstractEvent { // Отправка сообщения в чат
 
     public SendMessageEvent(JsonNode jsonNode, WebSocket webSocket, int requestID, Server server) {
         super(jsonNode, webSocket, requestID, server);

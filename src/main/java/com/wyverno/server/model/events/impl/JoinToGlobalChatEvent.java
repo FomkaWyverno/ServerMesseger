@@ -6,7 +6,7 @@ import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.events.AbstractEvent;
 import org.java_websocket.WebSocket;
 
-public class JoinToGlobalChatEvent extends AbstractEvent {
+public class JoinToGlobalChatEvent extends AbstractEvent { // Присоединение к Глобальному чату
 
     public JoinToGlobalChatEvent(JsonNode jsonNode, WebSocket webSocket, int requestID, Server server) {
         super(jsonNode, webSocket, requestID, server);

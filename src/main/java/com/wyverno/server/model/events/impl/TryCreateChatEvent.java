@@ -11,7 +11,7 @@ import org.java_websocket.WebSocket;
 
 import java.util.HashMap;
 
-public class TryCreateChatEvent extends AbstractEvent {
+public class TryCreateChatEvent extends AbstractEvent { // Попытка создать чат
 
     public TryCreateChatEvent(JsonNode jsonNode, WebSocket webSocket, int requestID, Server server) {
         super(jsonNode, webSocket, requestID, server);

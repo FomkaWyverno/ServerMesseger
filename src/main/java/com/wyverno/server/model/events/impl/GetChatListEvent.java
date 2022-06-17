@@ -11,7 +11,7 @@ import org.java_websocket.WebSocket;
 
 import java.util.List;
 
-public class GetChatListEvent extends AbstractEvent {
+public class GetChatListEvent extends AbstractEvent { // Получение списка чатов
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
