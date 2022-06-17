@@ -147,56 +147,6 @@ public class Server extends WebSocketServer {
         }
     }
 
-    /*private void processingRequest(JsonNode jsonNode, WebSocket webSocket) throws JsonProcessingException {
-        logger.trace("Processing request...");
-        switch (jsonNode.get("data").get("type").asText()) { // Узнаем тип запроса
-            case "authorization" : { // Проводим авторизацию пользователя
-                logger.trace("Type is authorization");
-                EventsD.joinNewClient(jsonNode.get("data"),
-                        webSocket,jsonNode.get("requestID").asInt(),
-                        this.clientHashMap,
-                        this.GLOBAL_CHAT); // Запускаем ивент входа новога пользователя
-                break;
-            }
-            case "message" : { // Отправляем сообщение пользоватям
-                logger.trace("Type is message");
-                EventsD.sendMessage(jsonNode.get("data"),webSocket, jsonNode.get("requestID").asInt(),this.clientHashMap); // Запускаем ивент отправки сообщения
-                break;
-            }
-            case "getChatList" : { // Клиент просит лист с чатами
-                logger.trace("Type is getChatList");
-                EventsD.getList(webSocket,jsonNode.get("requestID").asInt(),chatList);
-                break;
-            }
-            case "tryJoinToChat" : { // Клиент подключился к чату
-                logger.trace("Type is joinToChat");
-                EventsD.tryJoinToChat(jsonNode.get("data"),
-                        webSocket,
-                        jsonNode.get("requestID").asInt(),
-                        this.chatList,
-                        this.clientHashMap);
-                break;
-            }
-            case "joinToGlobalChat" : {
-                logger.trace("Type is join to global chat");
-                EventsD.joinToGlobalChat(webSocket,
-                        this.GLOBAL_CHAT,
-                        this.clientHashMap);
-                break;
-            }
-
-            case "tryCreateChat" : {
-                logger.trace("Type is try Create Chat");
-                EventsD.tryCreateChat(jsonNode.get("data"),
-                        webSocket,
-                        jsonNode.get("requestID").asInt(),
-                        this.clientHashMap,
-                        this.chatList,
-                        this);
-            }
-        }
-    }*/
-
     public HashMap<WebSocket, Client> getClientHashMap() {
         return clientHashMap;
     }
