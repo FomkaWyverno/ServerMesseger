@@ -23,10 +23,10 @@ public abstract class Chat {
     private static final int DEFAULT_MAX_MESSAGES = 60;
 
     @JsonIgnore
-    private LinkedList<ElementMessageInChat> elementMessageInChatLinkedList = new LinkedList<>(); // Элементы чаты
+    private volatile LinkedList<ElementMessageInChat> elementMessageInChatLinkedList = new LinkedList<>(); // Элементы чаты
     //private LinkedList<Message> messages = new LinkedList<>();
     @JsonIgnore
-    private List<Client> chatClients; // Клиенты в чате
+    private volatile List<Client> chatClients; // Клиенты в чате
     @JsonIgnore
     private int idElement = 0; // Самый последний айди элемента
 

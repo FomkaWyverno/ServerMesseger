@@ -2,8 +2,13 @@ package com.wyverno.server;
 
 import com.wyverno.server.model.Server;
 import com.wyverno.server.model.client.chat.GlobalChat;
+import com.wyverno.server.model.events.Event;
+import com.wyverno.server.model.events.Events;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 
 public class Main {
 
@@ -20,20 +25,14 @@ public class Main {
         serverThread.start();
         logger.trace("Thread Server is start");
 
+        /*Server server = new Server(new GlobalChat());
+        Method[] methods = Events.class.getDeclaredMethods();
 
-        /*PrivateChat testChat1 = new PrivateChat("Test1",10,"str",server);
-        PrivateChat testChat2 = new PrivateChat("ETO-Test2",10,server);
-        PrivateChat testChat3 = new PrivateChat("Proverka",10,server);
-        PrivateChat testChat4 = new PrivateChat("ChatHavePassword", 10,"pass",server);
-        testChat1.setNeedObservable(false);
-        testChat2.setNeedObservable(false);
-        testChat3.setNeedObservable(false);
-        testChat4.setNeedObservable(false);
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(Event.class)) {
 
+            }
+        }*/
 
-        server.addChat(testChat1);
-        server.addChat(testChat2);
-        server.addChat(testChat3);
-        server.addChat(testChat4);*/
     }
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.Chat;
-import com.wyverno.server.model.client.chat.GlobalChat;
 import com.wyverno.server.model.client.chat.PrivateChat;
 import com.wyverno.server.model.response.Response;
 import com.wyverno.server.model.response.ResponseDataTryJoinToChatError;
@@ -17,9 +16,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Events {
+public class EventsD {
 
-    private static final Logger logger = LoggerFactory.getLogger(Events.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventsD.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public synchronized static void joinNewClient(JsonNode jsonNode,

@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.Chat;
 import com.wyverno.server.model.client.chat.PrivateChat;
+import com.wyverno.server.model.events.AbstractEvent;
+import com.wyverno.server.model.events.Event;
+import com.wyverno.server.model.events.Events;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -13,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import org.slf4j.Logger;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,38 +31,45 @@ public class Server extends WebSocketServer {
     private static final int DEFAULT_PORT = 4747;
 
 
+    private final HashMap<String, Method> eventMethods = new HashMap<>();
+
     private final HashMap<WebSocket,Client> clientHashMap = new HashMap<>();
     private final List<PrivateChat> chatList;
-    private final Chat GLOBAL_CHAT;
+    public final Chat GLOBAL_CHAT;
 
     public Server (InetSocketAddress address, List<PrivateChat> chatList, Chat globalChat) {
         super(address);
         this.chatList = chatList;
         this.GLOBAL_CHAT = globalChat;
+        this.initEvents();
     }
 
     public Server(int port, List<PrivateChat> chatList, Chat globalChat) {
         super(new InetSocketAddress(port));
         this.chatList = chatList;
         this.GLOBAL_CHAT = globalChat;
+        this.initEvents();
     }
 
     public Server(InetSocketAddress address, Chat globalChat) {
         super(address);
         this.chatList = new ArrayList<>();
         this.GLOBAL_CHAT = globalChat;
+        this.initEvents();
     }
 
     public Server(int port, Chat globalChat) {
         super(new InetSocketAddress(port));
         this.chatList = new ArrayList<>();
         this.GLOBAL_CHAT = globalChat;
+        this.initEvents();
     }
 
     public Server(Chat globalChat) {
         super(new InetSocketAddress(DEFAULT_PORT));
         this.chatList = new ArrayList<>();
         this.GLOBAL_CHAT = globalChat;
+        this.initEvents();
     }
 
 
@@ -104,13 +116,43 @@ public class Server extends WebSocketServer {
         // Оповещаем логера о запуске сервера
     }
 
+    private void initEvents() { // Инизилизируем методы для ивентов
+        Method[] methods = Events.class.getDeclaredMethods();
 
-    private void processingRequest(JsonNode jsonNode, WebSocket webSocket) throws JsonProcessingException {
+        for (Method method : methods) { // Проходимся по каждому методу
+            if (method.isAnnotationPresent(Event.class)) { // Проверяем если в метода анотация @Event
+
+                Event event = method.getAnnotation(Event.class); // Берем эту анотацию
+                this.eventMethods.put(event.type(), method); // Добавляем в карту как ключ тип, как значение метод
+            }
+        }
+    }
+
+    private void processingRequest(JsonNode jsonNode, WebSocket webSocket) {
+        logger.trace("Processing request...");
+        JsonNode dataNode = jsonNode.get("data");
+
+        logger.debug("Check if contains key is type: " + dataNode.get("type").asText());
+        if (this.eventMethods.containsKey(dataNode.get("type").asText())) { // Проверяем есть ли такой тип ивента
+            try {
+                Method method = this.eventMethods.get(dataNode.get("type").asText());
+                AbstractEvent event = (AbstractEvent) method.invoke(Events.class,dataNode,webSocket,jsonNode.get("requestID").asInt(),this); // Создаем обьект ивента
+
+                event.runEvent(); // Выполняем ивент
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                logger.error("When executing method.invoke got an exception");
+            }
+        } else { // Если не существует ивента который прислал пользователь
+            logger.warn("User send type event which is not");
+        }
+    }
+
+    /*private void processingRequest(JsonNode jsonNode, WebSocket webSocket) throws JsonProcessingException {
         logger.trace("Processing request...");
         switch (jsonNode.get("data").get("type").asText()) { // Узнаем тип запроса
             case "authorization" : { // Проводим авторизацию пользователя
                 logger.trace("Type is authorization");
-                Events.joinNewClient(jsonNode.get("data"),
+                EventsD.joinNewClient(jsonNode.get("data"),
                         webSocket,jsonNode.get("requestID").asInt(),
                         this.clientHashMap,
                         this.GLOBAL_CHAT); // Запускаем ивент входа новога пользователя
@@ -118,17 +160,17 @@ public class Server extends WebSocketServer {
             }
             case "message" : { // Отправляем сообщение пользоватям
                 logger.trace("Type is message");
-                Events.sendMessage(jsonNode.get("data"),webSocket, jsonNode.get("requestID").asInt(),this.clientHashMap); // Запускаем ивент отправки сообщения
+                EventsD.sendMessage(jsonNode.get("data"),webSocket, jsonNode.get("requestID").asInt(),this.clientHashMap); // Запускаем ивент отправки сообщения
                 break;
             }
             case "getChatList" : { // Клиент просит лист с чатами
                 logger.trace("Type is getChatList");
-                Events.getList(webSocket,jsonNode.get("requestID").asInt(),chatList);
+                EventsD.getList(webSocket,jsonNode.get("requestID").asInt(),chatList);
                 break;
             }
             case "tryJoinToChat" : { // Клиент подключился к чату
                 logger.trace("Type is joinToChat");
-                Events.tryJoinToChat(jsonNode.get("data"),
+                EventsD.tryJoinToChat(jsonNode.get("data"),
                         webSocket,
                         jsonNode.get("requestID").asInt(),
                         this.chatList,
@@ -137,7 +179,7 @@ public class Server extends WebSocketServer {
             }
             case "joinToGlobalChat" : {
                 logger.trace("Type is join to global chat");
-                Events.joinToGlobalChat(webSocket,
+                EventsD.joinToGlobalChat(webSocket,
                         this.GLOBAL_CHAT,
                         this.clientHashMap);
                 break;
@@ -145,7 +187,7 @@ public class Server extends WebSocketServer {
 
             case "tryCreateChat" : {
                 logger.trace("Type is try Create Chat");
-                Events.tryCreateChat(jsonNode.get("data"),
+                EventsD.tryCreateChat(jsonNode.get("data"),
                         webSocket,
                         jsonNode.get("requestID").asInt(),
                         this.clientHashMap,
@@ -153,6 +195,14 @@ public class Server extends WebSocketServer {
                         this);
             }
         }
+    }*/
+
+    public HashMap<WebSocket, Client> getClientHashMap() {
+        return clientHashMap;
+    }
+
+    public List<PrivateChat> getChatList() {
+        return chatList;
     }
 
     public void addChat(PrivateChat chat) {
