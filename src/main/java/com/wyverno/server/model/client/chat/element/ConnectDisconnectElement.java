@@ -2,26 +2,17 @@ package com.wyverno.server.model.client.chat.element;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wyverno.server.model.client.Client;
 
 public class ConnectDisconnectElement extends ElementMessageInChat {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String name;
     private boolean isConnect;
 
-    public ConnectDisconnectElement(int id, String name, boolean isConnect) {
-        super(id);
-        this.name = name;
+    public ConnectDisconnectElement(int id, Client client, boolean isConnect) {
+        super(id, client);
         this.isConnect = isConnect;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public boolean isConnect() {

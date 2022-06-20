@@ -49,12 +49,11 @@ public abstract class Chat {
     }
 
     public synchronized void sendMessage(Client client, String message) {
-        this.sendMessage(new Message(client.getNickname(),message, idElement));
-        this.idElement++;
+        this.sendMessage(new Message(this.idElement,client, message));
     }
 
     public synchronized void sendMessage(Message message) { // Отправляем сообщение
-        logger.info(message.toString());
+        logger.info(this + " " + message.toString());
         this.removeLastElementInChat();
         this.addElementInChat(message,Response.Type.message);// Добавляем в начало списка сообщение
     }
@@ -74,6 +73,7 @@ public abstract class Chat {
 
     private void addElementInChat(ElementMessageInChat element, Response.Type type) {
         this.removeLastElementInChat(); // Удаляем элементы из чата если они выходят границы
+        this.idElement++; // Увеличиваем айди
         this.elementMessageInChatLinkedList.addFirst(element); // Добавляем в начало списка
 
         Response response = null;
@@ -139,14 +139,12 @@ public abstract class Chat {
     }
 
     private void notifyJoinClient(Client client) {
-        ElementMessageInChat element = new ConnectDisconnectElement(this.idElement,client.getNickname(),true);
-        this.idElement++;
+        ElementMessageInChat element = new ConnectDisconnectElement(this.idElement,client,true);
         this.addElementInChat(element,Response.Type.joinToChat);
     }
 
     private void notifyLeaveClient(Client client) {
-        ElementMessageInChat element = new ConnectDisconnectElement(idElement,client.getNickname(),false); // Создаем элемент чата
-        this.idElement++; // Увеличиваем айди
+        ElementMessageInChat element = new ConnectDisconnectElement(idElement,client,false); // Создаем элемент чата
         this.addElementInChat(element,Response.Type.leaveFromChat); // Добавляем в чат элемент
     }
 

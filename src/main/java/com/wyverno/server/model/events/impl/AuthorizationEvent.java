@@ -38,7 +38,7 @@ public class AuthorizationEvent extends AbstractEvent { // Авторизаци�
                 this.server.GLOBAL_CHAT.joinClient(client); // Подключаем пользователя в глобальный чат
 
 
-                response = new Response(this.requestID,0,"OK",Response.Type.authorization); // Создаем отклик для пользователя
+                response = new Response(this.requestID,0, client.toJSON(), Response.Type.authorization); // Создаем отклик для пользователя
 
             } else {
                 this.logger.debug("The user has chosen a non-free name"); // Пользователь выбрал ник который уже занят

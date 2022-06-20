@@ -2,13 +2,8 @@ package com.wyverno.server;
 
 import com.wyverno.server.model.Server;
 import com.wyverno.server.model.client.chat.GlobalChat;
-import com.wyverno.server.model.events.Event;
-import com.wyverno.server.model.events.Events;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.TypeVariable;
 
 public class Main {
 
