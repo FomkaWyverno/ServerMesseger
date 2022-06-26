@@ -94,9 +94,9 @@ public class PrivateChat extends Chat {
     @Override
     public void leaveClient(Client client) {
         logger.trace("Client leave from private chat -> " + this + ": " + client.getNickname());
+        super.leaveClient(client);
         if (isNeedObservable) {
             logger.debug("Is need observable chat");
-            super.leaveClient(client);
             this.observer.update(this);
         } else {
             logger.debug("is not need observable chat");

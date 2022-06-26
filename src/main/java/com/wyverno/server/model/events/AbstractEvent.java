@@ -10,9 +10,9 @@ public abstract class AbstractEvent {
 
     protected final Logger logger = LoggerFactory.getLogger(AbstractEvent.class);
     protected final Server server;
-    protected final JsonNode jsonNode;
-    protected final WebSocket webSocket;
-    protected final int requestID;
+        protected final JsonNode jsonNode;
+        protected final WebSocket webSocket;
+        protected final int requestID;
 
     public AbstractEvent(JsonNode jsonNode, WebSocket webSocket, int requestID, Server server) {
         this.server = server;

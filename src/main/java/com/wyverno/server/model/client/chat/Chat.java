@@ -11,10 +11,9 @@ import com.wyverno.server.model.client.chat.element.Message;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class Chat {
     protected static final Logger logger = LoggerFactory.getLogger(Chat.class);
@@ -36,12 +35,12 @@ public abstract class Chat {
     public Chat(String nameChat, int maxMessages, List<Client> chatClients) {
         this.nameChat = nameChat;
         this.maxMessages = maxMessages;
-        this.chatClients = chatClients;
+        this.chatClients = new CopyOnWriteArrayList<>(chatClients);
         logger.info("Create chat: " + this);
     }
 
     public Chat(String nameChat, int maxMessages) {
-        this(nameChat, maxMessages, new ArrayList<>());
+        this(nameChat, maxMessages, new CopyOnWriteArrayList<>());
     }
 
     public Chat(String nameChat) {
@@ -101,32 +100,44 @@ public abstract class Chat {
     }
 
     public void joinClient(Client client) { // Клиент вошел в этот чат
-        logger.info("Client: " + client.getNickname() + " joined to chat under the name of " + this.toString());
+        logger.info("Client try connection to " + this.toString());
+        if (client.getRightNowChat() == null || !client.getRightNowChat().equals(this)) {
+            logger.info("Client: " + client.getNickname() + " joined to chat under the name of " + this.toString());
 
-        if (client.getRightNowChat() != null) { // Если клиент уже находится в каком то чате
-            client.getRightNowChat().leaveClient(client); // Выходим из чата
-        }
-
-        client.setRightNowChat(this); // Устанавливаем клиенту что он сейчас находится в этом чате
-        this.chatClients.add(client); // Добавляем его в пользователей этого чата
-
-
-        try {
-            Response responseNameChat = new Response(-1,0,this.nameChat,Response.Type.selfJoinToChat);
-            client.getWebSocket().send(responseNameChat.toJSON());
-            logger.debug("Send client response set name chat");
-            if (!elementMessageInChatLinkedList.isEmpty()) { // Если есть сообщение в чате тогда отправляем список клиенту
-                Response response = new Response(-1,0,objectMapper.writeValueAsString(elementMessageInChatLinkedList),Response.Type.listElementChat);
-                client.getWebSocket().send(response.toJSON());
-                logger.debug("Send client response with list message");
-                this.removeLastElementInChat();
+            if (client.getRightNowChat() != null) { // Если клиент уже находится в каком то чате
+                client.getRightNowChat().leaveClient(client); // Выходим из чата
             }
 
-        } catch (JsonProcessingException e) {
-            logger.error(e.getMessage() + " Cause -> " + e.getCause());
+            client.setRightNowChat(this); // Устанавливаем клиенту что он сейчас находится в этом чате
+            this.chatClients.add(client); // Добавляем его в пользователей этого чата
+
+
+            try {
+                Response responseNameChat = new Response(-1,0,this.nameChat,Response.Type.selfJoinToChat);
+                client.getWebSocket().send(responseNameChat.toJSON());
+                logger.debug("Send client response set name chat");
+                if (!elementMessageInChatLinkedList.isEmpty()) { // Если есть сообщение в чате тогда отправляем список клиенту
+                    Response response = new Response(-1,0,objectMapper.writeValueAsString(elementMessageInChatLinkedList),Response.Type.listElementChat);
+                    client.getWebSocket().send(response.toJSON());
+                    logger.debug("Send client response with list message");
+                    this.removeLastElementInChat();
+                }
+
+            } catch (JsonProcessingException e) {
+                logger.error(e.getMessage() + " Cause -> " + e.getCause());
+            }
+
+            this.notifyJoinClient(client); // Оповещаем пользователей чата о подключение нового клиента
+        } else {
+            Response response = new Response(-1,1,"CONNECT TO SELF CHAT", Response.Type.selfJoinToChat);
+            try {
+                client.getWebSocket().send(response.toJSON());
+            } catch (JsonProcessingException e) {
+                logger.error(e.getMessage());
+            }
+            logger.info("The client is trying to connect to the chat he is in");
         }
 
-        this.notifyJoinClient(client); // Оповещаем пользователей чата о подключение нового клиента
 
 
     }
