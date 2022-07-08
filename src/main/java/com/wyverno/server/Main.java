@@ -2,9 +2,16 @@ package com.wyverno.server;
 
 import com.wyverno.server.model.Server;
 import com.wyverno.server.model.client.chat.GlobalChat;
-import com.wyverno.server.model.client.chat.PrivateChat;
+import com.wyverno.server.model.sql.DataBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Properties;
 
 public class Main {
 
@@ -12,7 +19,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Server server = new Server(50,new GlobalChat(5));
+        Server server = new Server(50,new GlobalChat(100));
 
         logger.trace("Created server");
         Thread serverThread = new Thread(server);
@@ -20,5 +27,23 @@ public class Main {
 
         serverThread.start();
         logger.trace("Thread Server is start");
+
+        try {
+
+            Properties properties = new Properties();
+            properties.load(new FileInputStream("./database.properties"));
+
+            DataBase dataBase = new DataBase(
+                    properties.getProperty("url"),
+                    properties.getProperty("username"),
+                    properties.getProperty("password"),
+                    DataBase.Type.valueOf(properties.getProperty("type")));
+            logger.info("Connected to Database!");
+
+            logger.trace("Test database!");
+            dataBase.getFriendsUsernameByID_User(13).forEach(System.out::println);
+        } catch (SQLException | IOException e) {
+            logger.error(e.getMessage());
+        }
     }
 }

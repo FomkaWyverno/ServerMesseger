@@ -33,7 +33,7 @@
 
     <Loggers>
 
-        <Logger name="com.wyverno" additivity="false" level="INFO">
+        <Logger name="com.wyverno" additivity="false" level="TRACE">
             <AppenderRef ref="console"/>
             <AppenderRef ref="file_log"/>
         </Logger>

@@ -2,14 +2,14 @@ package com.wyverno.server.model.client.chat.element;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wyverno.server.model.client.Client;
+import com.wyverno.server.model.client.Session;
 
 public class Message extends ElementMessageInChat {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private String message;
 
-    public Message(int id, Client client, String message) {
+    public Message(int id, Session client, String message) {
         super(id, client);
         this.message = message;
     }

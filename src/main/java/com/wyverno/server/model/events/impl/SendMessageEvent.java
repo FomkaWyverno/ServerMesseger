@@ -2,7 +2,7 @@ package com.wyverno.server.model.events.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyverno.server.model.Server;
-import com.wyverno.server.model.client.Client;
+import com.wyverno.server.model.client.Session;
 import com.wyverno.server.model.client.chat.Chat;
 import com.wyverno.server.model.events.AbstractEvent;
 import org.java_websocket.WebSocket;
@@ -19,9 +19,9 @@ public class SendMessageEvent extends AbstractEvent { // Отправка соо
     public void runEvent() {
         super.runEvent();
 
-        HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
+        HashMap<WebSocket, Session> clientHashMap = this.server.getClientHashMap();
 
-        Client client = clientHashMap.get(this.webSocket); // Берем у Сокета обьект Клиента
+        Session client = clientHashMap.get(this.webSocket); // Берем у Сокета обьект Клиента
         logger.debug("HashMap ->" + clientHashMap.toString()); // Показываем внутреность карты
         logger.trace("Get client object from clientHashMap: " + client.toString()); // Оповещаем что мы взяли из карты клиента
         logger.trace("We have a json node -> " + jsonNode.textValue());

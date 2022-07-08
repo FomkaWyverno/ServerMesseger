@@ -3,7 +3,7 @@ package com.wyverno.server.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wyverno.server.model.client.Client;
+import com.wyverno.server.model.client.Session;
 import com.wyverno.server.model.client.chat.Chat;
 import com.wyverno.server.model.client.chat.PrivateChat;
 import com.wyverno.server.model.events.AbstractEvent;
@@ -33,7 +33,7 @@ public class Server extends WebSocketServer {
 
     private final HashMap<String, Method> eventMethods = new HashMap<>();
 
-    private final HashMap<WebSocket,Client> clientHashMap = new HashMap<>();
+    private final HashMap<WebSocket, Session> clientHashMap = new HashMap<>();
     private final List<PrivateChat> chatList;
     public final Chat GLOBAL_CHAT;
 
@@ -84,7 +84,7 @@ public class Server extends WebSocketServer {
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         logger.info("Disconnected client: " + webSocket.getRemoteSocketAddress().getHostString() + ":" + webSocket.getRemoteSocketAddress().getPort());
         // Логируем информацию о отключеном пользователе
-        Client client = clientHashMap.get(webSocket);
+        Session client = clientHashMap.get(webSocket);
         logger.info("Disconnected nick: " + client.getNickname());
         this.clientHashMap.remove(webSocket);
         Chat clientChat = client.getRightNowChat();
@@ -147,7 +147,7 @@ public class Server extends WebSocketServer {
         }
     }
 
-    public HashMap<WebSocket, Client> getClientHashMap() {
+    public HashMap<WebSocket, Session> getClientHashMap() {
         return clientHashMap;
     }
 

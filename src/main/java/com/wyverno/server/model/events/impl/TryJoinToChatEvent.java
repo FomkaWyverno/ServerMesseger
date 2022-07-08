@@ -3,7 +3,7 @@ package com.wyverno.server.model.events.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyverno.server.model.Server;
-import com.wyverno.server.model.client.Client;
+import com.wyverno.server.model.client.Session;
 import com.wyverno.server.model.client.chat.PrivateChat;
 import com.wyverno.server.model.events.AbstractEvent;
 import com.wyverno.server.model.response.Response;
@@ -22,9 +22,9 @@ public class TryJoinToChatEvent extends AbstractEvent { // Попытка под
     public void runEvent() {
         super.runEvent();
 
-        HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
+        HashMap<WebSocket, Session> clientHashMap = this.server.getClientHashMap();
 
-        Client client = clientHashMap.get(this.webSocket);
+        Session client = clientHashMap.get(this.webSocket);
         PrivateChat chat = null;
         this.logger.trace("Start search chat");
         for (PrivateChat c : this.server.getChatList()) { // Ищем чат по айди
