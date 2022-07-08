@@ -2,7 +2,7 @@ package com.wyverno.server.model.client.chat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wyverno.server.model.Server;
-import com.wyverno.server.model.client.Session;
+import com.wyverno.server.model.client.Client;
 
 public class PrivateChat extends Chat {
 
@@ -15,14 +15,14 @@ public class PrivateChat extends Chat {
     @JsonIgnore
     private String password;
     @JsonIgnore
-    private Session mainClient;
+    private Client mainClient;
     @JsonIgnore
     private Server observer;
     @JsonIgnore
     private boolean isNeedObservable = true;
 
 
-    public PrivateChat(String nameChat, int maxMessages, String password, Session client, Server observer) {
+    public PrivateChat(String nameChat, int maxMessages, String password, Client client, Server observer) {
         super(nameChat,maxMessages);
         this.joinClient(client);
         this.password = password;
@@ -31,7 +31,7 @@ public class PrivateChat extends Chat {
         this.observer = observer;
     }
 
-    public PrivateChat(String nameChat, int maxMessages, Session client, Server observer) {
+    public PrivateChat(String nameChat, int maxMessages, Client client, Server observer) {
         super(nameChat, maxMessages);
         this.joinClient(client);
         this.mainClient = client;
@@ -39,7 +39,7 @@ public class PrivateChat extends Chat {
         this.observer = observer;
     }
 
-    public PrivateChat(String nameChat, String password, Session client, Server observer) {
+    public PrivateChat(String nameChat, String password, Client client, Server observer) {
         super(nameChat);
         this.joinClient(client);
         this.mainClient = client;
@@ -74,7 +74,7 @@ public class PrivateChat extends Chat {
         this.observer = observer;
     }
 
-    public PrivateChat(String nameChat, Session client, Server observer) {
+    public PrivateChat(String nameChat, Client client, Server observer) {
         super(nameChat);
         this.hasPassword = false;
         this.joinClient(client);
@@ -82,7 +82,7 @@ public class PrivateChat extends Chat {
         this.observer = observer;
     }
 
-    public boolean joinClient(Session client, String password) { // Дополняем реализацию входа
+    public boolean joinClient(Client client, String password) { // Дополняем реализацию входа
 
         if (!this.hasPassword || this.password.equals(password)) {
             super.joinClient(client);
@@ -92,7 +92,7 @@ public class PrivateChat extends Chat {
     }
 
     @Override
-    public void leaveClient(Session client) {
+    public void leaveClient(Client client) {
         logger.trace("Client leave from private chat -> " + this + ": " + client.getNickname());
         super.leaveClient(client);
         if (isNeedObservable) {
@@ -123,11 +123,11 @@ public class PrivateChat extends Chat {
         this.password = password;
     }
 
-    public Session getMainClient() {
+    public Client getMainClient() {
         return mainClient;
     }
 
-    public void setMainClient(Session mainClient) {
+    public void setMainClient(Client mainClient) {
         this.mainClient = mainClient;
     }
 

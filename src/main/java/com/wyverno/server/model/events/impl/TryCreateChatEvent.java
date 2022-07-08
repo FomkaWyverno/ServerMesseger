@@ -3,7 +3,7 @@ package com.wyverno.server.model.events.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyverno.server.model.Server;
-import com.wyverno.server.model.client.Session;
+import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.PrivateChat;
 import com.wyverno.server.model.events.AbstractEvent;
 import com.wyverno.server.model.response.Response;
@@ -25,9 +25,9 @@ public class TryCreateChatEvent extends AbstractEvent { // Попытка соз
 
         if (isFreeChatName(jsonNode.get("name").asText())) {
 
-            HashMap<WebSocket, Session> clientHashMap = this.server.getClientHashMap();
+            HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
 
-            Session client = clientHashMap.get(this.webSocket);
+            Client client = clientHashMap.get(this.webSocket);
 
             PrivateChat chat;
 

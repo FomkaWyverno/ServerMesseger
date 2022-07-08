@@ -2,7 +2,7 @@ package com.wyverno.server.model.client.chat.element;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wyverno.server.model.client.Session;
+import com.wyverno.server.model.client.Client;
 
 public class ConnectDisconnectElement extends ElementMessageInChat {
 
@@ -10,7 +10,7 @@ public class ConnectDisconnectElement extends ElementMessageInChat {
 
     private boolean isConnect;
 
-    public ConnectDisconnectElement(int id, Session client, boolean isConnect) {
+    public ConnectDisconnectElement(int id, Client client, boolean isConnect) {
         super(id, client);
         this.isConnect = isConnect;
     }

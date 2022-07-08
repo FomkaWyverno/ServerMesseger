@@ -33,15 +33,9 @@ public class Main {
             Properties properties = new Properties();
             properties.load(new FileInputStream("./database.properties"));
 
-            DataBase dataBase = new DataBase(
-                    properties.getProperty("url"),
-                    properties.getProperty("username"),
-                    properties.getProperty("password"),
-                    DataBase.Type.valueOf(properties.getProperty("type")));
-            logger.info("Connected to Database!");
+            DataBase dataBase = new DataBase(properties);
 
-            logger.trace("Test database!");
-            dataBase.getFriendsUsernameByID_User(13).forEach(System.out::println);
+            logger.info("Connected to Database!");
         } catch (SQLException | IOException e) {
             logger.error(e.getMessage());
         }

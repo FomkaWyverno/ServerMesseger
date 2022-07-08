@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.response.Response;
-import com.wyverno.server.model.client.Session;
+import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.client.chat.element.ConnectDisconnectElement;
 import com.wyverno.server.model.client.chat.element.ElementMessageInChat;
 import com.wyverno.server.model.client.chat.element.Message;
@@ -25,14 +25,14 @@ public abstract class Chat {
     private volatile LinkedList<ElementMessageInChat> elementMessageInChatLinkedList = new LinkedList<>(); // Элементы чаты
     //private LinkedList<Message> messages = new LinkedList<>();
     @JsonIgnore
-    private volatile List<Session> chatClients; // Клиенты в чате
+    private volatile List<Client> chatClients; // Клиенты в чате
     @JsonIgnore
     private int idElement = 0; // Самый последний айди элемента
 
     private int maxMessages; // Максимальное количество сообщений
     private String nameChat; // Название чата
 
-    public Chat(String nameChat, int maxMessages, List<Session> chatClients) {
+    public Chat(String nameChat, int maxMessages, List<Client> chatClients) {
         this.nameChat = nameChat;
         this.maxMessages = maxMessages;
         this.chatClients = new CopyOnWriteArrayList<>(chatClients);
@@ -47,7 +47,7 @@ public abstract class Chat {
         this(nameChat,DEFAULT_MAX_MESSAGES);
     }
 
-    public synchronized void sendMessage(Session client, String message) {
+    public synchronized void sendMessage(Client client, String message) {
         this.sendMessage(new Message(this.idElement,client, message));
     }
 
@@ -99,7 +99,7 @@ public abstract class Chat {
         return element;
     }
 
-    public void joinClient(Session client) { // Клиент вошел в этот чат
+    public void joinClient(Client client) { // Клиент вошел в этот чат
         logger.info("Client try connection to " + this.toString());
         if (client.getRightNowChat() == null || !client.getRightNowChat().equals(this)) {
             logger.info("Client: " + client.getNickname() + " joined to chat under the name of " + this.toString());
@@ -142,19 +142,19 @@ public abstract class Chat {
 
     }
 
-    public void leaveClient(Session client) { // Клиент вышел из чата
+    public void leaveClient(Client client) { // Клиент вышел из чата
         logger.info("Client: " + client.getNickname() + " leave from chat under the name of " + this.toString());
         client.setRightNowChat(null); // Устанавливаем что клиент вышел из чата
         this.chatClients.remove(client); // Удаляем из списка чата
         this.notifyLeaveClient(client); // Оповещаем о выходе клиента
     }
 
-    private void notifyJoinClient(Session client) {
+    private void notifyJoinClient(Client client) {
         ElementMessageInChat element = new ConnectDisconnectElement(this.idElement,client,true);
         this.addElementInChat(element,Response.Type.joinToChat);
     }
 
-    private void notifyLeaveClient(Session client) {
+    private void notifyLeaveClient(Client client) {
         ElementMessageInChat element = new ConnectDisconnectElement(idElement,client,false); // Создаем элемент чата
         this.addElementInChat(element,Response.Type.leaveFromChat); // Добавляем в чат элемент
     }
@@ -169,7 +169,7 @@ public abstract class Chat {
 
         assert jsonResponse != null;
         logger.debug("Notify all clients in " + this.nameChat + " JSON Message for Clients -> " + jsonResponse);
-        for (Session c : this.chatClients) { // Отправлеям всем участинам чата
+        for (Client c : this.chatClients) { // Отправлеям всем участинам чата
             try {
                 c.getWebSocket().send(jsonResponse);
             } catch (WebsocketNotConnectedException e) {
@@ -204,7 +204,7 @@ public abstract class Chat {
         this.nameChat = nameChat;
     }
 
-    public List<Session> getChatClients() {
+    public List<Client> getChatClients() {
         return chatClients;
     }
 

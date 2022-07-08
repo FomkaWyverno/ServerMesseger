@@ -3,9 +3,12 @@ package com.wyverno.server.model.sql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class DataBase {
 
@@ -35,6 +38,14 @@ public class DataBase {
 
         this.connection = DriverManager.getConnection(url.toString(), username, password);
         this.statement = this.connection.createStatement();
+
+    }
+
+    public DataBase(Properties properties) throws SQLException, IOException {
+        this(properties.getProperty("url"),
+             properties.getProperty("username"),
+             properties.getProperty("password"),
+             DataBase.Type.valueOf(properties.getProperty("type")));
 
     }
 

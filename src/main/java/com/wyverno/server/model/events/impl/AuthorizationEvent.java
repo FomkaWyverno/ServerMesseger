@@ -3,7 +3,7 @@ package com.wyverno.server.model.events.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyverno.server.model.Server;
-import com.wyverno.server.model.client.Session;
+import com.wyverno.server.model.client.Client;
 import com.wyverno.server.model.events.AbstractEvent;
 import com.wyverno.server.model.response.Response;
 import org.java_websocket.WebSocket;
@@ -22,7 +22,7 @@ public class AuthorizationEvent extends AbstractEvent { // Авторизаци�
     public synchronized void runEvent() {
         super.runEvent();
 
-        HashMap<WebSocket, Session> clientHashMap = this.server.getClientHashMap();
+        HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
 
 
         try {
@@ -31,7 +31,7 @@ public class AuthorizationEvent extends AbstractEvent { // Авторизаци�
             if (isFreeNickname(this.jsonNode.get("nickname").asText())) {
                 this.logger.debug("User chose a free name"); // Никнейм свободен
 
-                Session client = new Session(this.jsonNode.get("nickname").asText(),this.webSocket); // Создаем клиента
+                Client client = new Client(this.jsonNode.get("nickname").asText(),this.webSocket); // Создаем клиента
 
                 clientHashMap.put(this.webSocket,client); // Кладем его в мапу под ключем сокета
                 this.logger.debug("Put in hashMap new client | HashMap -> " + clientHashMap.toString());
@@ -61,11 +61,11 @@ public class AuthorizationEvent extends AbstractEvent { // Авторизаци�
     private synchronized boolean isFreeNickname(String clientNickname) { // Проверка свободный ли никнейм на сервере
         boolean isFree = true;
 
-        HashMap<WebSocket, Session> clientHashMap = this.server.getClientHashMap();
+        HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
 
 
         clientNickname = clientNickname.toLowerCase();
-        for (Map.Entry<WebSocket, Session> pair : clientHashMap.entrySet()) {
+        for (Map.Entry<WebSocket, Client> pair : clientHashMap.entrySet()) {
             if (pair.getValue().getNickname().toLowerCase().equals(clientNickname)) {
                 isFree = false;
                 break;

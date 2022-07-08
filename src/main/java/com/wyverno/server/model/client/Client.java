@@ -7,7 +7,7 @@ import com.wyverno.server.model.ParserJSON;
 import com.wyverno.server.model.client.chat.Chat;
 import org.java_websocket.WebSocket;
 
-public class Session implements ParserJSON {
+public class Client implements ParserJSON {
     @JsonIgnore
     private static int UID_COUNTER = 0;
     @JsonIgnore
@@ -23,7 +23,7 @@ public class Session implements ParserJSON {
     @JsonIgnore
     private Chat rightNowChat;
 
-    public Session(String nickname, WebSocket webSocket) {
+    public Client(String nickname, WebSocket webSocket) {
         this.nickname = nickname;
         this.webSocket = webSocket;
     }
