@@ -7,10 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Properties;
 
 public class Main {
@@ -19,23 +17,25 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Server server = new Server(50,new GlobalChat(100));
-
-        logger.trace("Created server");
-        Thread serverThread = new Thread(server);
-        logger.trace("Created Thread for Server");
-
-        serverThread.start();
-        logger.trace("Thread Server is start");
-
         try {
-
+            logger.trace("Created properties");
             Properties properties = new Properties();
+            logger.trace("Loading properties from file");
             properties.load(new FileInputStream("./database.properties"));
 
             DataBase dataBase = new DataBase(properties);
 
-            logger.info("Connected to Database!");
+
+            Server server = new Server(50,new GlobalChat(100), dataBase);
+
+            logger.trace("Created server");
+            Thread serverThread = new Thread(server);
+            logger.trace("Created Thread for Server");
+
+            serverThread.start();
+            logger.trace("Thread Server is start");
+
+
         } catch (SQLException | IOException e) {
             logger.error(e.getMessage());
         }

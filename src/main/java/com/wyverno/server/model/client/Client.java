@@ -5,17 +5,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wyverno.server.model.ParserJSON;
 import com.wyverno.server.model.client.chat.Chat;
+import com.wyverno.server.model.client.chat.account.Account;
 import org.java_websocket.WebSocket;
 
 public class Client implements ParserJSON {
-    @JsonIgnore
-    private static int UID_COUNTER = 0;
+
     @JsonIgnore
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-
-    private final int UID = UID_COUNTER++;
-    private String nickname;
+    private final Account account;
 
 
     @JsonIgnore
@@ -23,13 +21,13 @@ public class Client implements ParserJSON {
     @JsonIgnore
     private Chat rightNowChat;
 
-    public Client(String nickname, WebSocket webSocket) {
-        this.nickname = nickname;
+    public Client(Account account, WebSocket webSocket) {
+        this.account = account;
         this.webSocket = webSocket;
     }
 
     public String getNickname() {
-        return nickname;
+        return this.account.getUsername();
     }
 
     public WebSocket getWebSocket() {
@@ -45,14 +43,15 @@ public class Client implements ParserJSON {
     }
 
     public int getUID() {
-        return UID;
+        return this.account.getId();
     }
 
     @Override
     public String toString() {
         return "Client{" +
-                "nickname='" + nickname + '\'' +
+                "account=" + account +
                 ", webSocket=" + webSocket +
+                ", rightNowChat=" + rightNowChat +
                 '}';
     }
 

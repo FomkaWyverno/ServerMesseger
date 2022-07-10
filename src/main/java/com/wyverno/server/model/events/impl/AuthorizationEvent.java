@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wyverno.server.model.Server;
 import com.wyverno.server.model.client.Client;
+import com.wyverno.server.model.client.chat.account.AccountBuilder;
+import com.wyverno.server.model.client.chat.account.AccountIsNotLogged;
 import com.wyverno.server.model.events.AbstractEvent;
 import com.wyverno.server.model.response.Response;
 import org.java_websocket.WebSocket;
@@ -24,25 +26,24 @@ public class AuthorizationEvent extends AbstractEvent { // Авторизаци�
 
         HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
 
-
+        Response response;
         try {
 
-            Response response;
-            if (isFreeNickname(this.jsonNode.get("nickname").asText())) {
-                this.logger.debug("User chose a free name"); // Никнейм свободен
-
-                Client client = new Client(this.jsonNode.get("nickname").asText(),this.webSocket); // Создаем клиента
+            try {
+                Client client = new Client(new AccountBuilder(this.server.getDataBase())
+                        .username(this.jsonNode.get("nickname").asText())
+                        .password(this.jsonNode.get("password").asText())
+                        .login(),
+                        this.webSocket); // Создаем клиента
 
                 clientHashMap.put(this.webSocket,client); // Кладем его в мапу под ключем сокета
                 this.logger.debug("Put in hashMap new client | HashMap -> " + clientHashMap.toString());
                 this.server.GLOBAL_CHAT.joinClient(client); // Подключаем пользователя в глобальный чат
 
-
                 response = new Response(this.requestID,0, client.toJSON(), Response.Type.authorization); // Создаем отклик для пользователя
-
-            } else {
-                this.logger.debug("The user has chosen a non-free name"); // Пользователь выбрал ник который уже занят
-                response = new Response(this.requestID,1,"Никнейм занят!",Response.Type.authorization); // Создаем отклик для пользователя
+            } catch (AccountIsNotLogged e) { // Если на этапе авторизации были введеные не верные данные
+                logger.warn("User are typed don't correct data for logged");
+                response = new Response(this.requestID, 2, "Bad password or Bad username",Response.Type.authorization);
             }
 
             String responseJson = response.toJSON(); // Преобразовуем отклик в JSON
@@ -56,22 +57,23 @@ public class AuthorizationEvent extends AbstractEvent { // Авторизаци�
         }
 
 
+
     }
 
-    private synchronized boolean isFreeNickname(String clientNickname) { // Проверка свободный ли никнейм на сервере
-        boolean isFree = true;
-
-        HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
-
-
-        clientNickname = clientNickname.toLowerCase();
-        for (Map.Entry<WebSocket, Client> pair : clientHashMap.entrySet()) {
-            if (pair.getValue().getNickname().toLowerCase().equals(clientNickname)) {
-                isFree = false;
-                break;
-            }
-        }
-        return isFree;
-    }
+//    private synchronized boolean isFreeNickname(String clientNickname) { // Проверка свободный ли никнейм на сервере
+//        boolean isFree = true;
+//
+//        HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
+//
+//
+//        clientNickname = clientNickname.toLowerCase();
+//        for (Map.Entry<WebSocket, Client> pair : clientHashMap.entrySet()) {
+//            if (pair.getValue().getNickname().toLowerCase().equals(clientNickname)) {
+//                isFree = false;
+//                break;
+//            }
+//        }
+//        return isFree;
+//    }
 
 }

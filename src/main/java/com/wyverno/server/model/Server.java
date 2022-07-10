@@ -9,6 +9,7 @@ import com.wyverno.server.model.client.chat.PrivateChat;
 import com.wyverno.server.model.events.AbstractEvent;
 import com.wyverno.server.model.events.Event;
 import com.wyverno.server.model.events.Events;
+import com.wyverno.server.model.sql.DataBase;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -37,38 +38,45 @@ public class Server extends WebSocketServer {
     private final List<PrivateChat> chatList;
     public final Chat GLOBAL_CHAT;
 
-    public Server (InetSocketAddress address, List<PrivateChat> chatList, Chat globalChat) {
+    private final DataBase dataBase;
+
+    public Server (InetSocketAddress address, List<PrivateChat> chatList, Chat globalChat, DataBase dataBase) {
         super(address);
         this.chatList = chatList;
         this.GLOBAL_CHAT = globalChat;
+        this.dataBase = dataBase;
         this.initEvents();
     }
 
-    public Server(int port, List<PrivateChat> chatList, Chat globalChat) {
+    public Server(int port, List<PrivateChat> chatList, Chat globalChat, DataBase dataBase) {
         super(new InetSocketAddress(port));
         this.chatList = chatList;
         this.GLOBAL_CHAT = globalChat;
+        this.dataBase = dataBase;
         this.initEvents();
     }
 
-    public Server(InetSocketAddress address, Chat globalChat) {
+    public Server(InetSocketAddress address, Chat globalChat, DataBase dataBase) {
         super(address);
         this.chatList = new ArrayList<>();
         this.GLOBAL_CHAT = globalChat;
+        this.dataBase = dataBase;
         this.initEvents();
     }
 
-    public Server(int port, Chat globalChat) {
+    public Server(int port, Chat globalChat, DataBase dataBase) {
         super(new InetSocketAddress(port));
         this.chatList = new ArrayList<>();
         this.GLOBAL_CHAT = globalChat;
+        this.dataBase = dataBase;
         this.initEvents();
     }
 
-    public Server(Chat globalChat) {
+    public Server(Chat globalChat, DataBase dataBase) {
         super(new InetSocketAddress(DEFAULT_PORT));
         this.chatList = new ArrayList<>();
         this.GLOBAL_CHAT = globalChat;
+        this.dataBase = dataBase;
         this.initEvents();
     }
 
@@ -163,6 +171,10 @@ public class Server extends WebSocketServer {
     public void removeChat(PrivateChat chat) {
         logger.info("Remove chat -> " + chat.toString());
         this.chatList.remove(chat);
+    }
+
+    public DataBase getDataBase() {
+        return dataBase;
     }
 
     public void update(PrivateChat chat) { // Наблюдаемый обьект обновился
