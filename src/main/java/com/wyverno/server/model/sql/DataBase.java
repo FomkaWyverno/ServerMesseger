@@ -73,7 +73,7 @@ public class DataBase {
         return list;
     }
 
-    public int isLoggedAndGetID(String username, String password) { // return -1 если имя или пароль не соотвествует параметру
+    public int getIdAccount(String username, String password) { // return -1 если имя или пароль не соотвествует параметру
         try {
             String sql = String.format(
                     "SELECT `id` FROM `accounts` WHERE `username` = '%s' AND `password` = '%s';",
@@ -86,6 +86,21 @@ public class DataBase {
             logger.error(e.getMessage());
         }
         return -1;
+    }
+
+    public boolean insertNewAccount(String username, String password) {
+        String sql = String.format(
+                "INSERT INTO `accounts`(`username`, `password`) VALUES ('%s','%s')",username,password);
+        try {
+            statement.execute(sql);
+            logger.info(String.format("User choose FREE variable `USERNAME`(%s)",username));
+            return true;
+        } catch (SQLIntegrityConstraintViolationException e) {
+            logger.info(String.format("User choose `USERNAME`(%s) in TABLE NOT FREE!",username));
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return false;
     }
 
     public enum Type {

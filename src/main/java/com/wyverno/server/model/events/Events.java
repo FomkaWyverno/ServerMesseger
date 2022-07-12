@@ -36,4 +36,9 @@ public class Events {
     public static AbstractEvent tryCreateChatEvent(JsonNode jsonNode, WebSocket webSocket, int requestID, Server server) {
         return new TryCreateChatEvent(jsonNode, webSocket, requestID, server);
     }
+
+    @Event(type = "registration")
+    public static AbstractEvent registrationEvent(JsonNode jsonNode, WebSocket webSocket, int requestID, Server server) {
+        return new RegistrationEvent(jsonNode, webSocket, requestID, server);
+    }
 }

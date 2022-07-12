@@ -59,21 +59,4 @@ public class AuthorizationEvent extends AbstractEvent { // Авторизаци�
 
 
     }
-
-//    private synchronized boolean isFreeNickname(String clientNickname) { // Проверка свободный ли никнейм на сервере
-//        boolean isFree = true;
-//
-//        HashMap<WebSocket, Client> clientHashMap = this.server.getClientHashMap();
-//
-//
-//        clientNickname = clientNickname.toLowerCase();
-//        for (Map.Entry<WebSocket, Client> pair : clientHashMap.entrySet()) {
-//            if (pair.getValue().getNickname().toLowerCase().equals(clientNickname)) {
-//                isFree = false;
-//                break;
-//            }
-//        }
-//        return isFree;
-//    }
-
 }
